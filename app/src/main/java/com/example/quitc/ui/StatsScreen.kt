@@ -3,7 +3,6 @@ package com.example.quitc.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
@@ -29,6 +28,8 @@ import java.time.YearMonth
 
 @Composable
 fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
+    val colors = MaterialTheme.colorScheme
+    val heartColor = Color(0xFFE91E63)
     val markedDays by vm.markedDays.collectAsStateWithLifecycle()
     val successRate by vm.successRate.collectAsStateWithLifecycle()
     val tokensLeft by vm.tokensLeft.collectAsStateWithLifecycle()
@@ -52,12 +53,12 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
     val yearlyCleanDays = markedDays.filter { it.key.year == LocalDate.now().year && it.value == DayStatus.CLEAN }.size
     val totalTokensUsed = markedDays.filter { it.value == DayStatus.HEART }.size
 
-    Surface(color = Color.White, modifier = Modifier.fillMaxSize()) {
+    Surface(color = colors.background, modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
-                .border(2.dp, Color.Black)
+                .border(2.dp, colors.outline)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -66,7 +67,7 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
-                    .border(1.dp, Color.Black)
+                    .border(1.dp, colors.outline)
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -75,12 +76,12 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
                 }
                 Text(
                     text = "Monthly Progress",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = Color.Black),
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = colors.onSurface),
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center
                 )
                 IconButton(onClick = { showResetDialog = true }) {
-                    Icon(Icons.Default.Delete, contentDescription = "Reset Data", modifier = Modifier.size(16.dp), tint = Color.Gray)
+                    Icon(Icons.Default.Delete, contentDescription = "Reset Data", modifier = Modifier.size(16.dp), tint = colors.onSurfaceVariant)
                 }
             }
 
@@ -88,21 +89,21 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color.Black)
+                    .border(1.dp, colors.outline)
                     .padding(16.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.Black)
+                        Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(20.dp), tint = colors.onSurface)
                         Spacer(Modifier.width(8.dp))
-                        Text("Smoke-Free Days: ", fontWeight = FontWeight.Bold, color = Color.Black)
-                        Text("$cleanDaysInMonth", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+                        Text("Smoke-Free Days: ", fontWeight = FontWeight.Bold, color = colors.onSurface)
+                        Text("$cleanDaysInMonth", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = colors.onSurface)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.Red)
+                        Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(20.dp), tint = heartColor)
                         Spacer(Modifier.width(8.dp))
-                        Text("Tokens Left: ", fontWeight = FontWeight.Bold, color = Color.Black)
-                        Text("$tokensLeft", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+                        Text("Tokens Left: ", fontWeight = FontWeight.Bold, color = colors.onSurface)
+                        Text("$tokensLeft", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = colors.onSurface)
                     }
                 }
             }
@@ -113,11 +114,11 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color.Black)
+                    .border(1.dp, colors.outline)
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Monthly Achievement", style = MaterialTheme.typography.labelLarge, color = Color.Black)
+                Text("Monthly Achievement", style = MaterialTheme.typography.labelLarge, color = colors.onSurface)
                 Spacer(Modifier.height(8.dp))
                 
                 // Custom wireframe progress bar
@@ -125,14 +126,14 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(24.dp)
-                        .border(1.dp, Color.Black)
-                        .background(Color.White)
+                        .border(1.dp, colors.outline)
+                        .background(colors.surfaceVariant)
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(if (successRate > 0) successRate.toFloat() / 100f else 0.01f)
                             .fillMaxHeight()
-                            .background(Color(0xFF4A4A4A))
+                            .background(colors.primary)
                     )
                 }
                 
@@ -143,12 +144,12 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Red)
-                        Text(" $successRate% Clean Rate", fontWeight = FontWeight.Bold, color = Color.Black)
+                        Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(16.dp), tint = heartColor)
+                        Text(" $successRate% Clean Rate", fontWeight = FontWeight.Bold, color = colors.onSurface)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Black)
-                        Text(" Fails: $fails", fontWeight = FontWeight.Bold, color = Color.Black)
+                        Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(16.dp), tint = colors.onSurface)
+                        Text(" Fails: $fails", fontWeight = FontWeight.Bold, color = colors.onSurface)
                     }
                 }
             }
@@ -159,15 +160,15 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color.Black)
+                    .border(1.dp, colors.outline)
                     .padding(16.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Historical Data", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Color.Black))
-                    HorizontalDivider(color = Color.Black)
-                    Text("• Longest Streak: $longestStreak Days", color = Color.Black)
-                    Text("• Yearly Clean Days: $yearlyCleanDays", color = Color.Black)
-                    Text("• Total Tokens Used: $totalTokensUsed", color = Color.Black)
+                    Text("Historical Data", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = colors.onSurface))
+                    HorizontalDivider(color = colors.outline)
+                    Text("• Longest Streak: $longestStreak Days", color = colors.onSurface)
+                    Text("• Yearly Clean Days: $yearlyCleanDays", color = colors.onSurface)
+                    Text("• Total Tokens Used: $totalTokensUsed", color = colors.onSurface)
                 }
             }
 
@@ -178,13 +179,13 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
                 onClick = { nav.popBackStack() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color.Black),
+                    .border(1.dp, colors.outline),
                 shape = RectangleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black)
+                colors = ButtonDefaults.buttonColors(containerColor = colors.surface, contentColor = colors.onSurface)
             ) {
                 Icon(Icons.Default.Close, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Close Statistics", color = Color.Black)
+                Text("Close Statistics")
             }
         }
     }
@@ -192,8 +193,8 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
     if (showResetDialog) {
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
-            title = { Text("Reset All Data?", color = Color.Black) },
-            text = { Text("This will permanently delete all your smoking progress and token history. This action cannot be undone.", color = Color.Black) },
+            title = { Text("Reset All Data?", color = colors.onSurface) },
+            text = { Text("This will permanently delete all your smoking progress and token history. This action cannot be undone.", color = colors.onSurface) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -201,17 +202,17 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
                         showResetDialog = false
                     }
                 ) {
-                    Text("Reset", color = Color.Black)
+                    Text("Reset", color = colors.onSurface)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showResetDialog = false }) {
-                    Text("Cancel", color = Color.Black)
+                    Text("Cancel", color = colors.onSurface)
                 }
             },
-            containerColor = Color.White,
+            containerColor = colors.surface,
             shape = RectangleShape,
-            modifier = Modifier.border(1.dp, Color.Black)
+            modifier = Modifier.border(1.dp, colors.outline)
         )
     }
 }

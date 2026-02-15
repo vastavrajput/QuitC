@@ -3,15 +3,10 @@ package com.example.quitc.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -43,6 +38,7 @@ fun CalendarGrid(
     onDateClick: (LocalDate) -> Unit,
     onMonthChange: (YearMonth) -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
     val firstDayOfMonth = selectedMonth.atDay(1)
     val daysInMonth = selectedMonth.lengthOfMonth()
     val firstDayOfWeek = (firstDayOfMonth.dayOfWeek.value % 7)
@@ -67,7 +63,7 @@ fun CalendarGrid(
             }
         }
 
-        HorizontalDivider(color = Color.Black, thickness = 1.dp)
+        HorizontalDivider(color = colors.outline, thickness = 1.dp)
 
         Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             listOf("S", "M", "T", "W", "T", "F", "S").forEach {
@@ -80,7 +76,7 @@ fun CalendarGrid(
             }
         }
 
-        HorizontalDivider(color = Color.Black, thickness = 1.dp)
+        HorizontalDivider(color = colors.outline, thickness = 1.dp)
         Spacer(Modifier.height(8.dp))
 
         val totalCells = firstDayOfWeek + daysInMonth
@@ -101,17 +97,17 @@ fun CalendarGrid(
                                 val isFuture = date.isAfter(today)
 
                                 val backgroundColor = when {
-                                    isFuture -> Color(0xFFE6E6E6)
+                                    isFuture -> colors.surfaceVariant
                                     status == DayStatus.CLEAN -> Color(0xFF4A4A4A)
                                     status == DayStatus.HEART -> Color(0xFFE91E63)
                                     else -> Color.Transparent
                                 }
 
                                 val borderColor = when {
-                                    isToday -> Color.Black
-                                    isFuture -> Color(0xFFBDBDBD)
-                                    status == null -> Color.LightGray
-                                    else -> Color.Black
+                                    isToday -> colors.primary
+                                    isFuture -> colors.outlineVariant
+                                    status == null -> colors.outlineVariant
+                                    else -> colors.outline
                                 }
 
                                 Box(
@@ -134,9 +130,9 @@ fun CalendarGrid(
                                             fontWeight = if (isToday) FontWeight.ExtraBold else FontWeight.Bold
                                         ),
                                         color = when {
-                                            isFuture -> Color(0xFF9E9E9E)
+                                            isFuture -> colors.onSurfaceVariant
                                             status != null -> Color.White
-                                            else -> Color.Black
+                                            else -> colors.onSurface
                                         }
                                     )
                                 }
@@ -155,6 +151,8 @@ fun HomeScreen(
     nav: NavController,
     vm: SmokeViewModel
 ) {
+    val colors = MaterialTheme.colorScheme
+    val heartColor = Color(0xFFE91E63)
     val context = LocalContext.current
     val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
@@ -172,13 +170,13 @@ fun HomeScreen(
     val today = LocalDate.now()
     val todayStatus = markedDays[today]
 
-    Surface(color = Color.White, modifier = Modifier.fillMaxSize()) {
+    Surface(color = colors.background, modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
                 .padding(horizontal = 16.dp, vertical = 16.dp)
-                .border(1.dp, Color.Black)
+                .border(1.dp, colors.outline)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -186,7 +184,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 12.dp)
-                    .border(1.dp, Color.Black)
+                    .border(1.dp, colors.outline)
                     .padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -213,7 +211,7 @@ fun HomeScreen(
                 }
                 Text(
                     text = "Longest: $longestStreak Days",
-                    style = MaterialTheme.typography.labelMedium.copy(color = Color.Gray),
+                    style = MaterialTheme.typography.labelMedium.copy(color = colors.onSurfaceVariant),
                     modifier = Modifier.padding(top = 2.dp)
                 )
             }
@@ -221,7 +219,7 @@ fun HomeScreen(
             Spacer(Modifier.height(8.dp))
 
             // Calendar Box
-            Box(modifier = Modifier.fillMaxWidth().wrapContentHeight().border(1.dp, Color.Black).padding(8.dp)) {
+            Box(modifier = Modifier.fillMaxWidth().wrapContentHeight().border(1.dp, colors.outline).padding(8.dp)) {
                 CalendarGrid(
                     selectedMonth = selectedMonth,
                     markedDays = markedDays,
@@ -242,13 +240,13 @@ fun HomeScreen(
                         vibrator.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 50, 50, 50), -1))
                     },
                     enabled = todayStatus != DayStatus.CLEAN,
-                    modifier = Modifier.weight(1.2f).border(1.dp, if(todayStatus == DayStatus.CLEAN) Color.LightGray else Color.Black),
+                    modifier = Modifier.weight(1.2f).border(1.dp, if(todayStatus == DayStatus.CLEAN) colors.outlineVariant else colors.outline),
                     shape = RectangleShape,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White, 
-                        contentColor = Color.Black,
-                        disabledContainerColor = Color(0xFFF0F0F0),
-                        disabledContentColor = Color.Gray
+                        containerColor = colors.surface,
+                        contentColor = colors.onSurface,
+                        disabledContainerColor = colors.surfaceVariant,
+                        disabledContentColor = colors.onSurfaceVariant
                     ),
                     contentPadding = PaddingValues(12.dp)
                 ) {
@@ -260,17 +258,22 @@ fun HomeScreen(
                 Button(
                     onClick = { showTokenDialog = true },
                     enabled = todayStatus != DayStatus.HEART,
-                    modifier = Modifier.weight(1f).border(1.dp, if(todayStatus == DayStatus.HEART) Color.LightGray else Color.Black),
+                    modifier = Modifier.weight(1f).border(1.dp, if(todayStatus == DayStatus.HEART) colors.outlineVariant else colors.outline),
                     shape = RectangleShape,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White, 
-                        contentColor = Color.Black,
-                        disabledContainerColor = Color(0xFFF0F0F0),
-                        disabledContentColor = Color.Gray
+                        containerColor = colors.surface,
+                        contentColor = colors.onSurface,
+                        disabledContainerColor = colors.surfaceVariant,
+                        disabledContentColor = colors.onSurfaceVariant
                     ),
                     contentPadding = PaddingValues(12.dp)
                 ) {
-                    Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Icon(
+                        Icons.Default.Favorite,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = heartColor
+                    )
                     Spacer(Modifier.width(4.dp))
                     Text("Use Token", fontWeight = FontWeight.Bold)
                 }
@@ -279,12 +282,12 @@ fun HomeScreen(
             Spacer(Modifier.height(12.dp))
 
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                HorizontalDivider(color = Color.Black, thickness = 1.dp)
+                HorizontalDivider(color = colors.outline, thickness = 1.dp)
                 Spacer(Modifier.height(4.dp))
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Tokens Left: ", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.DarkGray)
+                    Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(18.dp), tint = heartColor)
                     Text(" $tokensLeft", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
                 Text(text = "Success Rate: $successRate%", fontWeight = FontWeight.Bold, fontSize = 16.sp)
@@ -294,9 +297,9 @@ fun HomeScreen(
 
             OutlinedButton(
                 onClick = { nav.navigate("stats") },
-                modifier = Modifier.fillMaxWidth().border(1.dp, Color.Black),
+                modifier = Modifier.fillMaxWidth().border(1.dp, colors.outline),
                 shape = RectangleShape,
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.onSurface)
             ) {
                 Text("VIEW MONTHLY PROGRESS", fontWeight = FontWeight.ExtraBold)
             }
@@ -306,8 +309,8 @@ fun HomeScreen(
     if (showTokenDialog) {
         Dialog(onDismissRequest = { showTokenDialog = false }) {
             Surface(
-                modifier = Modifier.fillMaxWidth().border(1.dp, Color.Black),
-                color = Color.White
+                modifier = Modifier.fillMaxWidth().border(1.dp, colors.outline),
+                color = colors.surface
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
@@ -315,7 +318,7 @@ fun HomeScreen(
                 ) {
                     Text("Use a Token?", style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold))
                     Spacer(Modifier.height(16.dp))
-                    HorizontalDivider(color = Color.Black)
+                    HorizontalDivider(color = colors.outline)
                     Spacer(Modifier.height(24.dp))
                     Text("You have $tokensLeft tokens left this month.", fontSize = 16.sp)
                     Spacer(Modifier.height(32.dp))
@@ -328,7 +331,7 @@ fun HomeScreen(
                         },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RectangleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63), contentColor = Color.White)
+                        colors = ButtonDefaults.buttonColors(containerColor = heartColor, contentColor = Color.White)
                     ) {
                         Icon(Icons.Default.Favorite, contentDescription = null)
                         Spacer(Modifier.width(12.dp))
@@ -339,9 +342,9 @@ fun HomeScreen(
 
                     OutlinedButton(
                         onClick = { showTokenDialog = false },
-                        modifier = Modifier.fillMaxWidth().border(1.dp, Color.Black),
+                        modifier = Modifier.fillMaxWidth().border(1.dp, colors.outline),
                         shape = RectangleShape,
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.onSurface)
                     ) {
                         Icon(Icons.Default.Close, contentDescription = null)
                         Spacer(Modifier.width(12.dp))
@@ -355,7 +358,7 @@ fun HomeScreen(
     if (showOptionsSheet && selectedDate != null) {
         ModalBottomSheet(
             onDismissRequest = { showOptionsSheet = false },
-            containerColor = Color.White,
+            containerColor = colors.surface,
             shape = RectangleShape
         ) {
             Column(
@@ -368,16 +371,16 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
-                HorizontalDivider(color = Color.Black)
+                HorizontalDivider(color = colors.outline)
                 Button(
                     onClick = { 
                         vm.updateDay(selectedDate!!, DayStatus.CLEAN)
                         vibrator.vibrate(VibrationEffect.createWaveform(longArrayOf(0, 50, 50, 50), -1))
                         showOptionsSheet = false 
                     },
-                    modifier = Modifier.fillMaxWidth().border(1.dp, Color.Black),
+                    modifier = Modifier.fillMaxWidth().border(1.dp, colors.outline),
                     shape = RectangleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black)
+                    colors = ButtonDefaults.buttonColors(containerColor = colors.surface, contentColor = colors.onSurface)
                 ) { Text("Mark Clean", fontWeight = FontWeight.Bold) }
                 Button(
                     onClick = { 
@@ -385,9 +388,9 @@ fun HomeScreen(
                         vibrator.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE))
                         showOptionsSheet = false 
                     },
-                    modifier = Modifier.fillMaxWidth().border(1.dp, Color.Black),
+                    modifier = Modifier.fillMaxWidth().border(1.dp, colors.outline),
                     shape = RectangleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black)
+                    colors = ButtonDefaults.buttonColors(containerColor = colors.surface, contentColor = colors.onSurface)
                 ) { Text("Use Token", fontWeight = FontWeight.Bold) }
                 OutlinedButton(
                     onClick = { 
@@ -395,9 +398,9 @@ fun HomeScreen(
                         vibrator.vibrate(VibrationEffect.createOneShot(30, 100))
                         showOptionsSheet = false 
                     },
-                    modifier = Modifier.fillMaxWidth().border(1.dp, Color.Black),
+                    modifier = Modifier.fillMaxWidth().border(1.dp, colors.outline),
                     shape = RectangleShape,
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.onSurface)
                 ) { Text("Clear Selection", fontWeight = FontWeight.Bold) }
             }
         }
