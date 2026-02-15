@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.smoketracker"
+    namespace = "com.example.quitc"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.smoketracker"
+        applicationId = "com.example.quitc"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

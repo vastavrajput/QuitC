@@ -16,5 +16,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SmokeTrackerPro"
+rootProject.name = "QuitC"
 include(":app")
