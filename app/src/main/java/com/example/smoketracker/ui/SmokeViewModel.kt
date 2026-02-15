@@ -11,57 +11,66 @@ import java.time.YearMonth
 
 class SmokeViewModel(private val dataStoreManager: DataStoreManager) : ViewModel() {
 
-    val markedDays: StateFlow<Map<LocalDate, DayStatus>> = dataStoreManager.markedDaysFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+    private val _markedDays = MutableStateFlow<Map<LocalDate, DayStatus>>(emptyMap())
+    val markedDays: StateFlow<Map<LocalDate, DayStatus>> = _markedDays.asStateFlow()
 
     private val _selectedMonth = MutableStateFlow(YearMonth.now())
     val selectedMonth: StateFlow<YearMonth> = _selectedMonth.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            dataStoreManager.markedDaysFlow.collect {
+                _markedDays.value = it
+            }
+        }
+    }
 
     fun updateMonth(newMonth: YearMonth) {
         _selectedMonth.value = newMonth
     }
 
     fun updateDay(date: LocalDate, status: DayStatus?) {
-        viewModelScope.launch {
-            val currentMap = markedDays.value.toMutableMap()
+        _markedDays.update { current ->
+            val newMap = current.toMutableMap()
             if (status == null) {
-                currentMap.remove(date)
+                newMap.remove(date)
             } else {
-                if (status == DayStatus.HEART) {
-                    val targetMonth = YearMonth.from(date)
-                    val heartsThisMonth = currentMap.filter {
-                        YearMonth.from(it.key) == targetMonth && it.value == DayStatus.HEART
-                    }.size
-                    if (heartsThisMonth < 3) {
-                        currentMap[date] = status
-                    }
-                } else {
-                    currentMap[date] = status
-                }
+                newMap[date] = status
             }
-            dataStoreManager.saveMarkedDays(currentMap)
+            newMap
+        }
+
+        viewModelScope.launch {
+            dataStoreManager.saveMarkedDays(_markedDays.value)
         }
     }
 
-    // Reactive derived state for the UI
+    fun resetData() {
+        _markedDays.value = emptyMap()
+        viewModelScope.launch {
+            dataStoreManager.clearAllData()
+        }
+    }
+
+    // Reactive derived state for the UI - using Eagerly to ensure immediate updates
     val successRate: StateFlow<Int> = combine(markedDays, _selectedMonth) { days, month ->
         calculateSuccessRate(days, month)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 100)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, 100)
 
     val tokensLeft: StateFlow<Int> = combine(markedDays, _selectedMonth) { days, month ->
         val tokensUsed = days.filter {
             YearMonth.from(it.key) == month && it.value == DayStatus.HEART
         }.size
-        (3 - tokensUsed).coerceAtLeast(0)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 3)
+        3 - tokensUsed
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, 3)
 
     val currentStreak: StateFlow<Int> = markedDays.map { days ->
         calculateCurrentActiveStreak(days)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     val longestStreak: StateFlow<Int> = markedDays.map { days ->
         calculateHistoricalLongestStreak(days)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     private fun calculateSuccessRate(days: Map<LocalDate, DayStatus>, month: YearMonth): Int {
         val daysPassedInMonth = when {
@@ -73,7 +82,7 @@ class SmokeViewModel(private val dataStoreManager: DataStoreManager) : ViewModel
         return if (daysPassedInMonth == 0) 100
         else {
             val cleanDaysInMonth = days.filter {
-                YearMonth.from(it.key) == month && it.value == DayStatus.CLEAN
+                YearMonth.from(it.key) == month && (it.value == DayStatus.CLEAN || it.value == DayStatus.HEART)
             }.size
             ((cleanDaysInMonth.toFloat() / daysPassedInMonth) * 100).toInt()
         }
@@ -81,12 +90,16 @@ class SmokeViewModel(private val dataStoreManager: DataStoreManager) : ViewModel
 
     private fun calculateCurrentActiveStreak(days: Map<LocalDate, DayStatus>): Int {
         var checkDate = LocalDate.now()
-        var streak = 0
         
+        // If today is HEART, streak is 0
+        if (days[checkDate] == DayStatus.HEART) return 0
+        
+        // If today isn't marked, start checking from yesterday to see the current streak
         if (days[checkDate] == null) {
             checkDate = checkDate.minusDays(1)
         }
         
+        var streak = 0
         while (days[checkDate] == DayStatus.CLEAN) {
             streak++
             checkDate = checkDate.minusDays(1)
@@ -104,7 +117,7 @@ class SmokeViewModel(private val dataStoreManager: DataStoreManager) : ViewModel
         for (date in sortedDates) {
             val status = days[date]
             if (status == DayStatus.CLEAN) {
-                if (lastDate == null || date == lastDate.plusDays(1)) {
+                if (lastDate != null && date == lastDate.plusDays(1)) {
                     current++
                 } else {
                     current = 1
@@ -112,6 +125,7 @@ class SmokeViewModel(private val dataStoreManager: DataStoreManager) : ViewModel
                 if (current > longest) longest = current
                 lastDate = date
             } else {
+                // Any status other than CLEAN (including HEART) breaks the streak
                 current = 0
                 lastDate = null
             }

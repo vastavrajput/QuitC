@@ -161,7 +161,6 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .padding(top = 32.dp) // Added extra top padding
                 .padding(horizontal = 16.dp, vertical = 16.dp)
                 .border(1.dp, Color.Black)
                 .padding(16.dp),
@@ -235,8 +234,8 @@ fun HomeScreen(
 
                 Button(
                     onClick = { showTokenDialog = true },
-                    enabled = todayStatus != DayStatus.HEART && tokensLeft > 0,
-                    modifier = Modifier.weight(1f).border(1.dp, if(todayStatus == DayStatus.HEART || tokensLeft == 0) Color.LightGray else Color.Black),
+                    enabled = todayStatus != DayStatus.HEART,
+                    modifier = Modifier.weight(1f).border(1.dp, if(todayStatus == DayStatus.HEART) Color.LightGray else Color.Black),
                     shape = RectangleShape,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White, 

@@ -39,4 +39,10 @@ class DataStoreManager(private val context: Context) {
             preferences[markedDaysKey] = jsonString
         }
     }
+
+    suspend fun clearAllData() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(markedDaysKey)
+        }
+    }
 }

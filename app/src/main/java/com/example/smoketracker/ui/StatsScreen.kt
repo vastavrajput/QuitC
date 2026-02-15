@@ -10,9 +10,9 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +34,8 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
     val tokensLeft by vm.tokensLeft.collectAsStateWithLifecycle()
     val longestStreak by vm.longestStreak.collectAsStateWithLifecycle()
     
+    var showResetDialog by remember { mutableStateOf(false) }
+
     val currentMonth = YearMonth.now()
     
     val cleanDaysInMonth = markedDays.filter { 
@@ -73,11 +75,13 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
                 }
                 Text(
                     text = "Monthly Progress",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = Color.Black),
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center
                 )
-                Spacer(Modifier.width(48.dp))
+                IconButton(onClick = { showResetDialog = true }) {
+                    Icon(Icons.Default.Delete, contentDescription = "Reset Data", modifier = Modifier.size(16.dp), tint = Color.Gray)
+                }
             }
 
             // Progress Summary Section
@@ -89,16 +93,16 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.Black)
                         Spacer(Modifier.width(8.dp))
-                        Text("Smoke-Free Days: ", fontWeight = FontWeight.Bold)
-                        Text("$cleanDaysInMonth", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+                        Text("Smoke-Free Days: ", fontWeight = FontWeight.Bold, color = Color.Black)
+                        Text("$cleanDaysInMonth", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.Red)
                         Spacer(Modifier.width(8.dp))
-                        Text("Tokens Left: ", fontWeight = FontWeight.Bold)
-                        Text("$tokensLeft", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+                        Text("Tokens Left: ", fontWeight = FontWeight.Bold, color = Color.Black)
+                        Text("$tokensLeft", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
                     }
                 }
             }
@@ -113,7 +117,7 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Monthly Achievement", style = MaterialTheme.typography.labelLarge)
+                Text("Monthly Achievement", style = MaterialTheme.typography.labelLarge, color = Color.Black)
                 Spacer(Modifier.height(8.dp))
                 
                 // Custom wireframe progress bar
@@ -140,11 +144,11 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Red)
-                        Text(" $successRate% Clean Rate", fontWeight = FontWeight.Bold)
+                        Text(" $successRate% Clean Rate", fontWeight = FontWeight.Bold, color = Color.Black)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Text(" Fails: $fails", fontWeight = FontWeight.Bold)
+                        Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Black)
+                        Text(" Fails: $fails", fontWeight = FontWeight.Bold, color = Color.Black)
                     }
                 }
             }
@@ -159,11 +163,11 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
                     .padding(16.dp)
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Historical Data", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                    Text("Historical Data", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = Color.Black))
                     HorizontalDivider(color = Color.Black)
-                    Text("• Longest Streak: $longestStreak Days")
-                    Text("• Yearly Clean Days: $yearlyCleanDays")
-                    Text("• Total Tokens Used: $totalTokensUsed")
+                    Text("• Longest Streak: $longestStreak Days", color = Color.Black)
+                    Text("• Yearly Clean Days: $yearlyCleanDays", color = Color.Black)
+                    Text("• Total Tokens Used: $totalTokensUsed", color = Color.Black)
                 }
             }
 
@@ -180,8 +184,34 @@ fun StatsScreen(nav: NavController, vm: SmokeViewModel) {
             ) {
                 Icon(Icons.Default.Close, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Close Statistics")
+                Text("Close Statistics", color = Color.Black)
             }
         }
+    }
+
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            title = { Text("Reset All Data?", color = Color.Black) },
+            text = { Text("This will permanently delete all your smoking progress and token history. This action cannot be undone.", color = Color.Black) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        vm.resetData()
+                        showResetDialog = false
+                    }
+                ) {
+                    Text("Reset", color = Color.Black)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) {
+                    Text("Cancel", color = Color.Black)
+                }
+            },
+            containerColor = Color.White,
+            shape = RectangleShape,
+            modifier = Modifier.border(1.dp, Color.Black)
+        )
     }
 }
