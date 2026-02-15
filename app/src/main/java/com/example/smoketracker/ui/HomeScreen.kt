@@ -146,6 +146,7 @@ fun HomeScreen(
     val markedDays by vm.markedDays.collectAsStateWithLifecycle()
     val selectedMonth by vm.selectedMonth.collectAsStateWithLifecycle()
     val currentStreak by vm.currentStreak.collectAsStateWithLifecycle()
+    val longestStreak by vm.longestStreak.collectAsStateWithLifecycle()
     val tokensLeft by vm.tokensLeft.collectAsStateWithLifecycle()
     val successRate by vm.successRate.collectAsStateWithLifecycle()
 
@@ -181,15 +182,24 @@ fun HomeScreen(
                 )
             }
 
-            Row(
-                modifier = Modifier.padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(vertical = 4.dp)
             ) {
-                Icon(Icons.Default.Whatshot, contentDescription = null, modifier = Modifier.size(32.dp))
-                Spacer(Modifier.width(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.Whatshot, contentDescription = null, modifier = Modifier.size(32.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "$currentStreak Day Streak",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
                 Text(
-                    text = "$currentStreak Day Streak",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
+                    text = "Longest: $longestStreak Days",
+                    style = MaterialTheme.typography.labelMedium.copy(color = Color.Gray),
+                    modifier = Modifier.padding(top = 2.dp)
                 )
             }
 
