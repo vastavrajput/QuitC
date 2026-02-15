@@ -98,11 +98,20 @@ fun CalendarGrid(
                                 val date = selectedMonth.atDay(day)
                                 val status = markedDays[date]
                                 val isToday = date == today
+                                val isFuture = date.isAfter(today)
 
-                                val backgroundColor = when (status) {
-                                    DayStatus.CLEAN -> Color(0xFF4A4A4A)
-                                    DayStatus.HEART -> Color(0xFFE91E63)
+                                val backgroundColor = when {
+                                    isFuture -> Color(0xFFE6E6E6)
+                                    status == DayStatus.CLEAN -> Color(0xFF4A4A4A)
+                                    status == DayStatus.HEART -> Color(0xFFE91E63)
                                     else -> Color.Transparent
+                                }
+
+                                val borderColor = when {
+                                    isToday -> Color.Black
+                                    isFuture -> Color(0xFFBDBDBD)
+                                    status == null -> Color.LightGray
+                                    else -> Color.Black
                                 }
 
                                 Box(
@@ -111,10 +120,12 @@ fun CalendarGrid(
                                         .fillMaxSize()
                                         .border(
                                             width = if (isToday) 2.dp else 1.dp,
-                                            color = if (isToday) Color.Black else if (status == null) Color.LightGray else Color.Black
+                                            color = borderColor
                                         )
                                         .background(backgroundColor)
-                                        .clickable { onDateClick(date) }
+                                        .let { base ->
+                                            if (isFuture) base else base.clickable { onDateClick(date) }
+                                        }
                                 ) {
                                     Text(
                                         text = day.toString(),
@@ -122,7 +133,11 @@ fun CalendarGrid(
                                             fontSize = 10.sp, 
                                             fontWeight = if (isToday) FontWeight.ExtraBold else FontWeight.Bold
                                         ),
-                                        color = if (status != null) Color.White else Color.Black
+                                        color = when {
+                                            isFuture -> Color(0xFF9E9E9E)
+                                            status != null -> Color.White
+                                            else -> Color.Black
+                                        }
                                     )
                                 }
                             }

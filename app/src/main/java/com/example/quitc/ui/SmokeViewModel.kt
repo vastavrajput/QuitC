@@ -19,8 +19,14 @@ class SmokeViewModel(private val dataStoreManager: DataStoreManager) : ViewModel
 
     init {
         viewModelScope.launch {
-            dataStoreManager.markedDaysFlow.collect {
-                _markedDays.value = it
+            dataStoreManager.markedDaysFlow.collect { savedDays ->
+                val today = LocalDate.now()
+                val sanitizedDays = savedDays.filterKeys { !it.isAfter(today) }
+                _markedDays.value = sanitizedDays
+
+                if (sanitizedDays.size != savedDays.size) {
+                    dataStoreManager.saveMarkedDays(sanitizedDays)
+                }
             }
         }
     }
@@ -30,6 +36,8 @@ class SmokeViewModel(private val dataStoreManager: DataStoreManager) : ViewModel
     }
 
     fun updateDay(date: LocalDate, status: DayStatus?) {
+        if (date.isAfter(LocalDate.now())) return
+
         _markedDays.update { current ->
             val newMap = current.toMutableMap()
             if (status == null) {
